@@ -7,7 +7,7 @@ import csv
 page = st.sidebar.radio("", ["Home", "Score Match", "Book Finder"])
 
 
-def load_random_sample_with_books(ratings_file="ratings.csv", books_file="books.csv", sample_size=10000):
+def load_random_sample_with_books(ratings_file="data/ratings.csv", books_file="data/books.csv", sample_size=10000):
     reservoir = []
     with open(ratings_file, newline='', encoding='utf-8') as f:
         reader = csv.DictReader(f)
