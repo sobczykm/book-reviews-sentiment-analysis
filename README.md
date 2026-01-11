@@ -127,7 +127,7 @@ Celem modelu jest **przypisanie recenzji książki do jednej z 5 klas sentymentu
 
 ### Stan obecny
 
-Aktualnie w aplikacji zastosowana jest **funkcja tymczasowa (dummy)**, która symuluje działanie modelu. Docelowo zostanie ona zastąpiona właściwym modelem ML.
+Aktualnie w aplikacji zastosowana jest **funkcja tymczasowa**, która symuluje działanie modelu. Docelowo zostanie ona zastąpiona właściwym modelem ML.
 
 ---
 
