@@ -174,11 +174,6 @@ Celem modelu jest **przypisanie recenzji książki do jednej z 5 klas sentymentu
 2. Czyszczenie tekstu (tokenizacja, normalizacja),
 3. Ekstrakcja cech (embeddingi BERT),
 4. Klasyfikacja sentymentu.
-
-### Stan obecny
-
-Aktualnie w aplikacji zastosowana jest **funkcja tymczasowa**, która symuluje działanie modelu. Docelowo zostanie ona zastąpiona właściwym modelem ML.
-
 ---
 
 ## Interfejs użytkownika
