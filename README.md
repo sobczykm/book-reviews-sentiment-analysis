@@ -47,6 +47,7 @@ Aplikacja składa się z:
 ## Specyfikacja wymagań
 
 ### Wymagania funkcjonalne
+#rozbic na bardziej dokladne, 1. statyski opisowe i wymienic, 2.ocena sentymentu recenzji wpisanej w formularzu, 3. wyszukiwarka książek wg okreslonych kryteriow
 
 | ID | Nazwa | Opis | Priorytet |
 |----|-------|------|-----------|
