@@ -103,7 +103,54 @@ System składa się z trzech głównych warstw:
 ---
 
 ## Procedura uruchomienia
-TODO: dodać instrukcję uruchomienia
+
+### Wymagania wstępne
+
+- Python 3.8 lub nowszy
+- [uv](https://github.com/astral-sh/uv) - szybki menedżer pakietów Python
+
+### Instalacja uv
+
+```bash
+# macOS/Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Windows (PowerShell)
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+### Instalacja zależności
+
+```bash
+# Instalacja zależności projektu
+uv sync
+
+# Alternatywnie, jeśli chcesz zainstalować tylko zależności bez tworzenia środowiska wirtualnego
+uv pip install -e .
+```
+
+### Uruchomienie aplikacji
+
+```bash
+# Uruchomienie aplikacji Streamlit
+uv run streamlit run app.py
+```
+
+### Inne przydatne komendy uv
+
+```bash
+# Dodanie nowej zależności
+uv add nazwa-pakietu
+
+# Usunięcie zależności
+uv remove nazwa-pakietu
+
+# Aktualizacja wszystkich zależności
+uv sync --upgrade
+
+# Wyświetlenie listy zależności
+uv pip list
+```
 
 ---
 
