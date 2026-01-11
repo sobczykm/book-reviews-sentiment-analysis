@@ -156,7 +156,7 @@ Aplikacja składa się z trzech głównych widoków:
 
 | ID | Wymaganie | Kroki | Oczekiwany rezultat |
 |----|----------|-------|---------------------|
-| T-1 | F-1 | Wpisać recenzję i kliknąć analizę | System zwraca ocenę sentymentu |
+| T-1 | F-1, F3 | Wpisać recenzję i kliknąć analizę | System zwraca ocenę sentymentu |
 | T-2 | F-2 | Wpisać różne teksty | Wynik mieści się w skali 1–5 |
 | T-3 | F-4 | Uruchomić analizę | Wyświetlane są gwiazdki |
 | T-4 | F-5 | Otworzyć ekran Home | Wyświetlane są statystyki |
