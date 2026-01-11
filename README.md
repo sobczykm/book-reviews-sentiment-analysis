@@ -42,8 +42,6 @@ Aplikacja składa się z:
   - wpisać własną recenzję i otrzymać przewidywaną ocenę,
   - przeglądać statystyki dotyczące książek i recenzji
 
-Projekt ma charakter edukacyjny i demonstracyjny.
-
 ---
 
 ## Specyfikacja wymagań
