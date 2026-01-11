@@ -34,7 +34,7 @@ System analizy sentymentu recenzji książek
 
 ### Krótki opis
 
-Celem projektu jest stworzenie prostego systemu do **automatycznej analizy sentymentu tekstu**, który na podstawie treści recenzji książki ocenia, czy ma ona wydźwięk pozytywny czy negatywny (docelowo w skali 1–5).
+Celem projektu jest stworzenie prostego systemu do **automatycznej analizy sentymentu tekstu** (recenzji książki) - ocenia, czy ma ona wydźwięk pozytywny czy negatywny (w skali 1–5).
 
 Aplikacja składa się z:
 - modelu klasyfikacji tekstu (analiza sentymentu),
