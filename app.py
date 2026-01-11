@@ -116,11 +116,18 @@ elif page == "Book Finder":
     st.title("Book Finder")
 
     def clean_list(value):
+        if pd.isna(value):
+            return ""
         if isinstance(value, list):
-            return ", ".join(value)
-        if isinstance(value, str) and value.startswith("["):
-            return value.strip("[]").replace("'", "").replace('"', "")
-        return value
+            return ", ".join(str(v) for v in value if v).strip()
+        if isinstance(value, str):
+            value = value.strip()
+            if not value:
+                return ""
+            if value.startswith("[") and value.endswith("]"):
+                return value[1:-1].replace("'", "").replace('"', "").strip()
+            return value
+        return str(value).strip() if value else ""
 
     if "df_books" not in st.session_state:
         with st.spinner("Please wait..."):
@@ -152,9 +159,9 @@ elif page == "Book Finder":
 
     # Kategorie
     if 'categories' in df_merged.columns:
-        categories_options = ["Any"] + sorted(
-            df_merged['categories'].dropna().apply(clean_list).unique()
-        )
+        cleaned_cats = df_merged['categories'].apply(clean_list)
+        unique_categories = cleaned_cats[(cleaned_cats != "") & (cleaned_cats.notna())].unique()
+        categories_options = ["Any"] + sorted([cat for cat in unique_categories if cat])
         selected_category = st.selectbox("Choose category:", categories_options)
     else:
         selected_category = "Any"
@@ -170,7 +177,7 @@ elif page == "Book Finder":
             (min_ratings, max_ratings)
         )
     else:
-       ratings_range = (min_ratings, max_ratings)
+       ratings_range = (0, 0)
 
     # ---------- WYSZUKIWANIE ----------
     if st.button("Find me a book"):
