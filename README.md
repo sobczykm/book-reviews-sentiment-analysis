@@ -108,6 +108,9 @@ System składa się z trzech głównych warstw:
 
 - Python 3.8 lub nowszy
 - [uv](https://github.com/astral-sh/uv) - szybki menedżer pakietów Python
+- dane z [kaggle](https://www.kaggle.com/datasets/mohamedbakhet/amazon-books-reviews/data), dodane w folderze data
+  - zmiana nazwy z Books_data.csv na books.csv
+  - zmiana nazwy z Books_ratings.csv na ratings.csv
 
 ### Instalacja uv
 
