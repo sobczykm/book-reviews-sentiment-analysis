@@ -135,6 +135,11 @@ uv pip install -e .
 ### Uruchomienie aplikacji
 
 ```bash
+# Generowanie modelu
+uv run python train_model.py
+```
+
+```bash
 # Uruchomienie aplikacji Streamlit
 uv run streamlit run app.py
 ```
