@@ -83,7 +83,7 @@ System składa się z trzech głównych warstw:
 2. **Warstwa logiki** – model analizy sentymentu oraz przetwarzanie danych,
 3. **Warstwa prezentacji** – aplikacja webowa oparta o Streamlit.
 
-### Technologie
+### Architektura rozwoju
 
 | Technologia | Przeznaczenie |
 |------------|--------------|
@@ -99,6 +99,11 @@ System składa się z trzech głównych warstw:
 - Aplikacja uruchamiana lokalnie
 - Brak dedykowanego backendu (logika w aplikacji)
 - Dane wczytywane z plików CSV
+
+---
+
+## Procedura uruchomienia
+TODO: dodać instrukcję uruchomienia
 
 ---
 
