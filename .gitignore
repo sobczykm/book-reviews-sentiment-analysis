@@ -49,3 +49,9 @@ Thumbs.db
 *.parquet
 *.pkl
 *.pickle
+
+
+# Model files (can be large)
+models/
+*.bin
+*.safetensors

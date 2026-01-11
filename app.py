@@ -3,11 +3,12 @@ import pandas as pd
 import plotly.express as px
 import random
 import csv
+from model_inference import SentimentModel
 
 page = st.sidebar.radio("", ["Home", "Score Match", "Book Finder"])
 
 
-def load_random_sample_with_books(ratings_file="data/ratings.csv", books_file="data/books.csv", sample_size=10000):
+def load_random_sample_with_books(ratings_file="data/ratings.csv", books_file="data/books.csv", sample_size=1000):
     reservoir = []
     with open(ratings_file, newline='', encoding='utf-8') as f:
         reader = csv.DictReader(f)
@@ -100,17 +101,39 @@ if page == "Home":
         }
     )
 
-# --- Score Match --- dummy zastapic pozniej BERTEM
+# --- Score Match ---
 elif page == "Score Match":
     st.title("Score Match")
     text = st.text_area("Write your review:")
+    
+    # Load model in session state (cached to avoid reloading)
+    if "sentiment_model" not in st.session_state:
+        with st.spinner("Loading sentiment model..."):
+            try:
+                st.session_state.sentiment_model = SentimentModel()
+            except FileNotFoundError as e:
+                st.error(f"Model not found. Please run `train_model.py` first to train the model.")
+                st.stop()
+            except Exception as e:
+                st.error(f"Error loading model: {str(e)}")
+                st.stop()
+    
     if st.button("Help me with the score"):
         if text.strip() == "":
             st.warning("Please write your review first")
         else:
-            score = len(text) % 5 + 1
-            stars = "★" * score + "☆" * (5 - score)
-            st.markdown(f"## Proposed score: {stars} ({score}/5)")
+            try:
+                with st.spinner("Analyzing sentiment..."):
+                    score, probs = st.session_state.sentiment_model.predict_sentiment(text, return_probs=True)
+                    stars = "★" * score + "☆" * (5 - score)
+                    st.markdown(f"## Proposed score: {stars} ({score}/5)")
+                    
+                    # Show probability distribution for debugging
+                    with st.expander("View prediction probabilities"):
+                        prob_dict = {f"Score {i+1}": f"{probs[i]:.2%}" for i in range(5)}
+                        st.write(prob_dict)
+            except Exception as e:
+                st.error(f"Error predicting sentiment: {str(e)}")
 
 elif page == "Book Finder":
     st.title("Book Finder")
