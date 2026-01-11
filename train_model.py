@@ -166,13 +166,14 @@ def prepare_datasets(df, tokenizer, test_size=0.2, val_size=0.1, random_state=42
     return train_dataset, val_dataset, test_dataset, test_df['review/score'].values, train_labels
 
 
-def calculate_class_weights(labels, device=None):
+def calculate_class_weights(labels, device=None, method='sqrt'):
     """
     Calculate class weights to handle imbalanced data.
     
     Args:
         labels: List of training labels (0-4)
         device: PyTorch device
+        method: 'balanced' (full inverse frequency), 'sqrt' (square root), or 'log' (logarithmic)
     
     Returns:
         Tensor of class weights
@@ -180,28 +181,40 @@ def calculate_class_weights(labels, device=None):
     # Convert to numpy array
     labels_array = np.array(labels)
     
-    # Calculate class weights using sklearn
-    classes = np.unique(labels_array)
-    class_weights = compute_class_weight(
-        'balanced',
-        classes=classes,
-        y=labels_array
-    )
+    # Count occurrences of each class
+    unique, counts = np.unique(labels_array, return_counts=True)
+    total = len(labels_array)
+    
+    # Calculate weights based on method
+    if method == 'balanced':
+        # Full inverse frequency weighting (can be too extreme)
+        class_weights = compute_class_weight('balanced', classes=unique, y=labels_array)
+    elif method == 'sqrt':
+        # Square root of inverse frequency (less extreme)
+        max_count = counts.max()
+        class_weights = np.sqrt(max_count / counts)
+    elif method == 'log':
+        # Logarithmic scaling (even less extreme)
+        max_count = counts.max()
+        class_weights = 1 + np.log(max_count / counts)
+    else:
+        class_weights = np.ones(len(unique))
     
     # Create a weight tensor for all 5 classes
-    weight_dict = dict(zip(classes, class_weights))
+    weight_dict = dict(zip(unique, class_weights))
     weights = torch.tensor([weight_dict.get(i, 1.0) for i in range(5)], dtype=torch.float32)
     
     if device:
         weights = weights.to(device)
     
-    print(f"Class weights: {weights.tolist()}")
+    print(f"Class distribution: {dict(zip(unique, counts))}")
+    print(f"Class weights ({method}): {weights.tolist()}")
     return weights
 
 
 def train_model(train_dataset, val_dataset, train_labels, model_name="distilbert-base-uncased", 
                 output_dir="models/sentiment_model", num_epochs=3, batch_size=16, 
-                learning_rate=2e-5, device=None):
+                learning_rate=2e-5, device=None, class_weight_method='sqrt'):
     """
     Fine-tune BERT model on sentiment classification.
     
@@ -230,7 +243,7 @@ def train_model(train_dataset, val_dataset, train_labels, model_name="distilbert
         model = model.to(device)
     
     # Calculate class weights
-    class_weights = calculate_class_weights(train_labels, device=device)
+    class_weights = calculate_class_weights(train_labels, device=device, method=class_weight_method)
     
     # Calculate warmup steps based on dataset size (10% of training steps, min 10, max 500)
     num_training_steps = len(train_dataset) // batch_size * num_epochs
@@ -323,14 +336,23 @@ def main():
     RATINGS_FILE = "data/ratings.csv"
     MODEL_NAME = "distilbert-base-uncased"
     OUTPUT_DIR = "models/sentiment_model"
-    SAMPLE_SIZE = 500  # Use None for full dataset, or set a number for faster training
-    NUM_EPOCHS = 3
+    SAMPLE_SIZE = 1000  # Use None for full dataset, or set a number for faster training
+    # IMPORTANT: Use at least 5000-10000 samples for good results. 500 is too small!
+    NUM_EPOCHS = 5  # Increased from 3 for better learning
     BATCH_SIZE = 16
     LEARNING_RATE = 2e-5
+    CLASS_WEIGHT_METHOD = 'sqrt'  # 'sqrt' (recommended), 'log', or 'balanced' (more extreme)
     
-    # Check if CUDA is available
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device}")
+    # Check for available devices (CUDA > MPS > CPU)
+    if torch.cuda.is_available():
+        device = torch.device("cuda")
+        print(f"Using device: {device} (CUDA)")
+    elif torch.backends.mps.is_available():
+        device = torch.device("mps")
+        print(f"Using device: {device} (Apple Silicon GPU)")
+    else:
+        device = torch.device("cpu")
+        print(f"Using device: {device} (CPU)")
     
     # Load and preprocess data
     df = load_and_preprocess_data(RATINGS_FILE, sample_size=SAMPLE_SIZE)
@@ -351,17 +373,19 @@ def main():
         num_epochs=NUM_EPOCHS,
         batch_size=BATCH_SIZE,
         learning_rate=LEARNING_RATE,
-        device=device
+        device=device,
+        class_weight_method=CLASS_WEIGHT_METHOD
     )
     
     # Evaluate
     metrics = evaluate_model(trainer, test_dataset, y_test)
     
     print(f"\nTraining complete! Model saved to {OUTPUT_DIR}")
-    print("\nNote: If the model still predicts mostly 5/5, try:")
-    print("  1. Increase SAMPLE_SIZE to at least 5000-10000 for better training")
-    print("  2. Increase NUM_EPOCHS to 5-10 for more training")
-    print("  3. Check the confusion matrix to see which classes are being confused")
+    print("\nIMPORTANT NOTES:")
+    print("  - If probabilities are all similar (~20% each), the model hasn't learned well")
+    print("  - This usually means you need MORE training data (at least 5000-10000 samples)")
+    print("  - Check the confusion matrix above to see prediction patterns")
+    print("  - If accuracy is low, try increasing SAMPLE_SIZE and NUM_EPOCHS")
 
 
 if __name__ == "__main__":
