@@ -205,13 +205,13 @@ Aplikacja składa się z trzech głównych widoków:
 
 ## Scenariusze testów
 
-| ID | Wymaganie | Kroki | Oczekiwany rezultat |
-|----|----------|-------|---------------------|
-| T-1 | F-1, F3 | Wpisać recenzję i kliknąć analizę | System zwraca ocenę sentymentu |
-| T-2 | F-2 | Wpisać różne teksty | Wynik mieści się w skali 1–5 |
-| T-3 | F-4 | Uruchomić analizę | Wyświetlane są gwiazdki |
-| T-4 | F-5 | Otworzyć ekran Home | Wyświetlane są statystyki |
-| T-5 | F-6 | Ustawić filtry i wyszukać książkę | Zwrócona książka spełnia kryteria |
+| ID | Wymaganie | Kroki | Oczekiwany rezultat | Status |
+|----|----------|-------|---------------------|--|
+| T-1 | F-1, F3 | Wpisać recenzję i kliknąć analizę | System zwraca ocenę sentymentu | ZROBIONE | 
+| T-2 | F-2 | Wpisać różne teksty | Wynik mieści się w skali 1–5 | ZROBIONE | 
+| T-3 | F-4 | Uruchomić analizę | Wyświetlane są gwiazdki | ZROBIONE | 
+| T-4 | F-5 | Otworzyć ekran Home | Wyświetlane są statystyki | ZROBIONE | 
+| T-5 | F-6 | Ustawić filtry i wyszukać książkę | Zwrócona książka spełnia kryteria | ZROBIONE | 
 
 ---
 
