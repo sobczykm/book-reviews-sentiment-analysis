@@ -381,11 +381,6 @@ def main():
     metrics = evaluate_model(trainer, test_dataset, y_test)
     
     print(f"\nTraining complete! Model saved to {OUTPUT_DIR}")
-    print("\nIMPORTANT NOTES:")
-    print("  - If probabilities are all similar (~20% each), the model hasn't learned well")
-    print("  - This usually means you need MORE training data (at least 5000-10000 samples)")
-    print("  - Check the confusion matrix above to see prediction patterns")
-    print("  - If accuracy is low, try increasing SAMPLE_SIZE and NUM_EPOCHS")
 
 
 if __name__ == "__main__":
