@@ -5,8 +5,7 @@ import random
 import csv
 from model_inference import SentimentModel
 
-page = st.sidebar.radio("", ["Home", "Score Match", "Book Finder"])
-
+page = st.sidebar.radio("Navigation", ["Home", "Score Match", "Book Finder"])
 
 def load_random_sample_with_books(ratings_file="data/ratings.csv", books_file="data/books.csv", sample_size=1000):
     reservoir = []
@@ -23,19 +22,21 @@ def load_random_sample_with_books(ratings_file="data/ratings.csv", books_file="d
     df_sample = pd.DataFrame(reservoir)
 
     df_sample['review/score'] = df_sample['review/score'].astype(float)
-    if 'review/time' in df_sample.columns:
-        df_sample['review/time'] = pd.to_datetime(df_sample['review/time'], unit='s', errors='coerce')
+    
+    
+    df_sample['review/time'] = pd.to_numeric(df_sample['review/time'], errors='coerce')
+    df_sample['review/time'] = pd.to_datetime(df_sample['review/time'], unit='s', errors='coerce')
 
     df_books = pd.read_csv(books_file)
 
-    if 'publishedDate' in df_books.columns:
-        df_books['publishedDate'] = pd.to_datetime(df_books['publishedDate'], errors='coerce')
+    df_books['publishedDate'] = pd.to_datetime(df_books['publishedDate'], errors='coerce')
 
     df_merged = pd.merge(df_sample, df_books, on='Title', how='left')
 
     return df_merged
 
-if "df_sample" not in st.session_state:
+
+if "df_sample" not in st.session_state: 
     with st.spinner("Generating the sample please hold"):
         st.session_state.df_sample = load_random_sample_with_books()
 df_sample = st.session_state.df_sample
@@ -43,7 +44,6 @@ df_sample = st.session_state.df_sample
 if page == "Home":
     st.title("Amazon Reviews")
 
-    # --- Podstawowe statystyki ---
     col1, col2, col3 = st.columns(3)
     col1.metric("Number of books", df_sample["Title"].nunique())
     col2.metric("Averge Score", round(df_sample["review/score"].mean(), 2))
@@ -53,26 +53,25 @@ if page == "Home":
     fig_scores = px.histogram(
         df_sample,
         x="review/score",
-        nbins=5,  # 5 binów = oceny 1-5
-        labels={"review/score": "Ocena", "count": "Liczba książek"},
-        title="Rozkład ocen książek"
+        nbins=5, 
+        labels={"review/score": "Score"},
+        title="Scores' distribution"
     )
+    fig_scores.update_yaxes(title_text="Number of reviews")
     fig_scores.update_traces(marker_line_width=0.5)  
     fig_scores.update_xaxes(dtick=1) 
     fig_scores.update_layout(bargap=0.3)  
 
     st.plotly_chart(
         fig_scores,
-        use_container_width=True,
+        width="stretch",
         config={
             'displayModeBar': False
         }
     )
 
-    st.subheader("Rozkład liczby recenzji")
-    ratings_count = df_sample.groupby("Title")["ratingsCount"].sum().reset_index()
+    ratings_count = df_sample.groupby("Title")["ratingsCount"].sum().reset_index() 
 
-    # Kategorie ręczne
     bins = [0, 10, 20, 50, 100, float('inf')]
     labels = ["0-10", "10-20", "20-50", "50-100", "100+"]
 
@@ -87,15 +86,16 @@ if page == "Home":
         ratings_count,
         x="ratings_bin",
         category_orders={"ratings_bin": labels},
-        labels={"ratings_bin": "Liczba recenzji", "count": "Liczba książek"},
-        title="Ile książek ma daną liczbę recenzji"
+        labels={"ratings_bin": "Number of reviews"},
+        title="Reviews per book"
     )
+    fig_ratings.update_yaxes(title_text="Number of books")
     fig_ratings.update_traces(marker_line_width=0.5)  
     fig_ratings.update_layout(bargap=0.3)
 
     st.plotly_chart(
         fig_ratings,
-        use_container_width=True,
+        width="stretch",
         config={
             'displayModeBar': False
         }
@@ -136,134 +136,151 @@ elif page == "Score Match":
                 st.error(f"Error predicting sentiment: {str(e)}")
 
 elif page == "Book Finder":
-    st.title("Book Finder")
 
-    def clean_list(value):
+    def normalize(value):
         if pd.isna(value):
-            return ""
+            return "No Data"
         if isinstance(value, list):
-            return ", ".join(str(v) for v in value if v).strip()
-        if isinstance(value, str):
-            value = value.strip()
-            if not value:
-                return ""
-            if value.startswith("[") and value.endswith("]"):
-                return value[1:-1].replace("'", "").replace('"', "").strip()
-            return value
-        return str(value).strip() if value else ""
+            return ", ".join(value)
+        return str(value).strip("[]").replace("'", "").replace('"', "")
 
-    if "df_books" not in st.session_state:
-        with st.spinner("Please wait..."):
-            st.session_state.df_books = df_sample.copy()
+    def apply_filters(
+        df,
+        year_range, min_year, max_year,
+        min_rating, max_rating,
+        ratings_range, min_r, max_r,
+        selected_category
+    ):
+        filtered = df.copy()
 
-    df_merged = st.session_state.df_books
-
-    # Zakres lat wydania
-    if 'publishedDate' in df_merged.columns and pd.api.types.is_datetime64_any_dtype(df_merged['publishedDate']):
-        min_year = int(df_merged['publishedDate'].dt.year.min())
-        max_year = int(df_merged['publishedDate'].dt.year.max())
-        year_range = st.slider(
-            "Please select the time period:",
-            min_year,
-            max_year,
-            (min_year, max_year)
-        )
-    else:
-        year_range = (0, 9999)
-
-    # Zakres średniej oceny
-    min_rating, max_rating = st.slider(
-        "Plese select the average score:",
-        1.0,
-        5.0,
-        (1.0, 5.0),
-        0.1
-    )
-
-    # Kategorie
-    if 'categories' in df_merged.columns:
-        cleaned_cats = df_merged['categories'].apply(clean_list)
-        unique_categories = cleaned_cats[(cleaned_cats != "") & (cleaned_cats.notna())].unique()
-        categories_options = ["Any"] + sorted([cat for cat in unique_categories if cat])
-        selected_category = st.selectbox("Choose category:", categories_options)
-    else:
-        selected_category = "Any"
-
-    # Popularność
-    if 'ratingsCount' in df_merged.columns:
-        min_ratings = int(df_merged['ratingsCount'].min())
-        max_ratings = int(df_merged['ratingsCount'].max())
-        ratings_range = st.slider(
-            "Number of reviews:",
-            min_ratings,
-            max_ratings,
-            (min_ratings, max_ratings)
-        )
-    else:
-       ratings_range = (0, 0)
-
-    # ---------- WYSZUKIWANIE ----------
-    if st.button("Find me a book"):
-        filtered = df_merged.copy()
-
-        if 'publishedDate' in filtered.columns and pd.api.types.is_datetime64_any_dtype(filtered['publishedDate']):
+        if year_range != (min_year, max_year):
             filtered = filtered[
+                (filtered['publishedDate'].notna()) &
                 (filtered['publishedDate'].dt.year >= year_range[0]) &
                 (filtered['publishedDate'].dt.year <= year_range[1])
             ]
 
-        if 'review/score' in filtered.columns:
+        if (min_rating, max_rating) != (1.0, 5.0):
             filtered = filtered[
+                (filtered['review/score'].notna()) &
                 (filtered['review/score'] >= min_rating) &
                 (filtered['review/score'] <= max_rating)
             ]
 
-        if selected_category != "Any" and 'categories' in filtered.columns:
+        if selected_category != "Any":
             filtered = filtered[
-                filtered['categories'].apply(clean_list) == selected_category
+                filtered['categories']
+                .fillna("")
+                .apply(normalize)
+                .str.contains(selected_category, case=False, na=False)
             ]
 
-        if 'ratingsCount' in filtered.columns:
+        if ratings_range != (min_r, max_r):
             filtered = filtered[
+                (filtered['ratingsCount'].notna()) &
                 (filtered['ratingsCount'] >= ratings_range[0]) &
                 (filtered['ratingsCount'] <= ratings_range[1])
             ]
 
-        # ---------- WYNIK ----------
-        st.subheader(f"Number of books that match the criteria: {len(filtered)}")
+        return filtered
 
-        if len(filtered) > 0:
-            random_book = filtered.sample(1).iloc[0]
-            col1, col2 = st.columns([1, 3])
+    st.title("Book Finder")
 
-            with col1:
-                img = random_book.get('image')
-                if pd.notna(img):
-                    st.image(img, width=450)
-                else:
-                    st.write("No cover found")
+    if "df_books" not in st.session_state:
+        st.session_state.df_books = df_sample.copy()
 
-            with col2:
-                st.markdown(f"### {random_book.get('Title', 'No Data')}")
+    df = st.session_state.df_books
 
-                st.write(f"**AUthors:** {clean_list(random_book.get('authors', 'No Data'))}")
-                st.write(f"**Genera:** {clean_list(random_book.get('categories', 'No Data'))}")
+    min_year = int(df['publishedDate'].dt.year.min())
+    max_year = int(df['publishedDate'].dt.year.max())
+    year_range = st.slider("Publication year:", min_year, max_year, (min_year, max_year))
 
-                description = random_book.get('description', 'No Data')
-                st.write(f"**Synopsis:** {description}")
+    min_rating, max_rating = st.slider("Average score:", 1.0, 5.0, (1.0, 5.0), 0.1)
 
-                score = random_book.get('review/score')
-                st.write(f"**Average score:** {round(score, 2) if pd.notna(score) else 'No Data'}")
+    categories = ["Any"] + sorted(df['categories'].dropna().apply(normalize).unique())
+    selected_category = st.selectbox("Category:", categories)
 
-                ratings = random_book.get('ratingsCount')
-                st.write(f"**Number of reviews:** {int(ratings) if pd.notna(ratings) else 'No Data'}")
+    min_r = int(df['ratingsCount'].min())
+    max_r = int(df['ratingsCount'].max())
+    ratings_range = st.slider("Number of reviews:", min_r, max_r, (min_r, max_r))
 
-                published = random_book.get('publishedDate')
-                st.write(f"**Date:** {published.date() if pd.notna(published) else 'No Data'}")
+    max_books = st.number_input(
+        "Max books to draw:",
+        min_value=1,
+        max_value=10,
+        value=5,
+        step=1
+    )
 
-                preview_link = random_book.get('previewLink')
-                if pd.notna(preview_link):
-                    st.markdown(f"[Link]({preview_link})")
+    if st.button("Find books"):
+
+        filtered = apply_filters(
+            df=df,
+            year_range=year_range,
+            min_year=min_year,
+            max_year=max_year,
+            min_rating=min_rating,
+            max_rating=max_rating,
+            ratings_range=ratings_range,
+            min_r=min_r,
+            max_r=max_r,
+            selected_category=selected_category
+        )
+
+        if len(filtered) == 0:
+            st.session_state.filtered_books = None
+        else:
+            if len(filtered) > max_books:
+                filtered = filtered.sample(max_books, replace=False)
+
+            st.session_state.filtered_books = filtered.reset_index(drop=True)
+            st.session_state.page = 1
+
+    if "filtered_books" in st.session_state:
+
+        if st.session_state.filtered_books is None:
+            st.warning("There were no books matching your criteria. Please tweak your search or reload the page.")
 
         else:
-            st.warning("No books match the criteria - please tweak your search or reload the app")
+            filtered = st.session_state.filtered_books
+            total_pages = len(filtered)
+
+            col_prev, col_page, col_next = st.columns([1, 2, 1])
+
+            with col_prev:
+                if st.session_state.page > 1:
+                    if st.button("Previous"):
+                        st.session_state.page -= 1
+                        st.rerun()
+
+            with col_page:
+                st.markdown(f"### Book {st.session_state.page} / {total_pages}")
+
+            with col_next:
+                if st.session_state.page < total_pages:
+                    if st.button("Next"):
+                        st.session_state.page += 1
+                        st.rerun()
+
+            book = filtered.iloc[st.session_state.page - 1]
+
+            col1, col2 = st.columns([1, 2])
+
+            with col1:
+                if pd.notna(book.get("image")):
+                    st.image(book["image"], width=200)
+                else:
+                    st.write("No cover")
+
+            with col2:
+                st.markdown(f"### {normalize(book.get('Title'))}")
+                st.write(f"**Authors:** {normalize(book.get('authors'))}")
+                st.write(f"**Genre:** {normalize(book.get('categories'))}")
+                st.write(f"**Synopsis:** {normalize(book.get('description'))}")
+                st.write(f"**Average score:** {round(book['review/score'],2) if pd.notna(book.get('review/score')) else 'No Data'}")
+                st.write(f"**Number of reviews:** {int(book['ratingsCount']) if pd.notna(book.get('ratingsCount')) else 'No Data'}")
+                st.write(f"**Date:** {book['publishedDate'].date() if pd.notna(book.get('publishedDate')) else 'No Data'}")
+                if pd.notna(book.get("previewLink")):
+                    st.markdown(f"[Preview link]({book['previewLink']})")
+
+
