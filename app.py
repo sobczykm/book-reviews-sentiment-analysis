@@ -23,7 +23,6 @@ def load_random_sample_with_books(ratings_file="data/ratings.csv", books_file="d
 
     df_sample['review/score'] = df_sample['review/score'].astype(float)
     
-    
     df_sample['review/time'] = pd.to_numeric(df_sample['review/time'], errors='coerce')
     df_sample['review/time'] = pd.to_datetime(df_sample['review/time'], unit='s', errors='coerce')
 
@@ -36,22 +35,22 @@ def load_random_sample_with_books(ratings_file="data/ratings.csv", books_file="d
     return df_merged
 
 
-if "df_sample" not in st.session_state: 
+if "df" not in st.session_state: 
     with st.spinner("Generating the sample please hold"):
-        st.session_state.df_sample = load_random_sample_with_books()
-df_sample = st.session_state.df_sample
+        st.session_state.df= load_random_sample_with_books()
+df= st.session_state.df
 
 if page == "Home":
     st.title("Amazon Reviews")
 
     col1, col2, col3 = st.columns(3)
-    col1.metric("Number of books", df_sample["Title"].nunique())
-    col2.metric("Averge Score", round(df_sample["review/score"].mean(), 2))
-    col3.metric("Averge number of reviews", round(df_sample["ratingsCount"].mean(), 2))
+    col1.metric("Number of books", df["Title"].nunique())
+    col2.metric("Averge Score", round(df["review/score"].mean(), 2))
+    col3.metric("Averge number of reviews", round(df["ratingsCount"].mean(), 2))
 
 
     fig_scores = px.histogram(
-        df_sample,
+        df,
         x="review/score",
         nbins=5, 
         labels={"review/score": "Score"},
@@ -70,7 +69,7 @@ if page == "Home":
         }
     )
 
-    ratings_count = df_sample.groupby("Title")["ratingsCount"].sum().reset_index() 
+    ratings_count = df.groupby("Title")["ratingsCount"].sum().reset_index() 
 
     bins = [0, 10, 20, 50, 100, float('inf')]
     labels = ["0-10", "10-20", "20-50", "50-100", "100+"]
@@ -101,12 +100,10 @@ if page == "Home":
         }
     )
 
-# --- Score Match ---
 elif page == "Score Match":
     st.title("Score Match")
     text = st.text_area("Write your review:")
     
-    # Load model in session state (cached to avoid reloading)
     if "sentiment_model" not in st.session_state:
         with st.spinner("Loading sentiment model..."):
             try:
@@ -128,7 +125,6 @@ elif page == "Score Match":
                     stars = "★" * score + "☆" * (5 - score)
                     st.markdown(f"## Proposed score: {stars} ({score}/5)")
                     
-                    # Show probability distribution for debugging
                     with st.expander("View prediction probabilities"):
                         prob_dict = {f"Score {i+1}": f"{probs[i]:.2%}" for i in range(5)}
                         st.write(prob_dict)
@@ -137,6 +133,8 @@ elif page == "Score Match":
 
 elif page == "Book Finder":
 
+    st.title("Book Finder")
+
     def normalize(value):
         if pd.isna(value):
             return "No Data"
@@ -144,58 +142,51 @@ elif page == "Book Finder":
             return ", ".join(value)
         return str(value).strip("[]").replace("'", "").replace('"', "")
 
-    def apply_filters(
-        df,
-        year_range, min_year, max_year,
-        min_rating, max_rating,
-        ratings_range, min_r, max_r,
-        selected_category
-    ):
-        filtered = df.copy()
+    def apply_filters(year_range, rating_range, ratings_range,
+                      min_year, max_year, min_r, max_r,
+                      selected_category):
+
+        filtered = df
 
         if year_range != (min_year, max_year):
             filtered = filtered[
-                (filtered['publishedDate'].notna()) &
+                filtered['publishedDate'].notna() &
                 (filtered['publishedDate'].dt.year >= year_range[0]) &
                 (filtered['publishedDate'].dt.year <= year_range[1])
             ]
 
-        if (min_rating, max_rating) != (1.0, 5.0):
+        
+        if rating_range != (1.0, 5.0):
             filtered = filtered[
-                (filtered['review/score'].notna()) &
-                (filtered['review/score'] >= min_rating) &
-                (filtered['review/score'] <= max_rating)
+                filtered['review/score'].notna() &
+                (filtered['review/score'] >= rating_range[0]) &
+                (filtered['review/score'] <= rating_range[1])
             ]
+
+        if ratings_range != (min_r, max_r):
+            filtered = filtered[
+                filtered['ratingsCount'].notna() &
+                (filtered['ratingsCount'] >= ratings_range[0]) &
+                (filtered['ratingsCount'] <= ratings_range[1])
+            ]
+
 
         if selected_category != "Any":
             filtered = filtered[
                 filtered['categories']
                 .fillna("")
                 .apply(normalize)
-                .str.contains(selected_category, case=False, na=False)
-            ]
-
-        if ratings_range != (min_r, max_r):
-            filtered = filtered[
-                (filtered['ratingsCount'].notna()) &
-                (filtered['ratingsCount'] >= ratings_range[0]) &
-                (filtered['ratingsCount'] <= ratings_range[1])
+                .str.contains(selected_category, case=False, regex= False)
             ]
 
         return filtered
 
-    st.title("Book Finder")
-
-    if "df_books" not in st.session_state:
-        st.session_state.df_books = df_sample.copy()
-
-    df = st.session_state.df_books
 
     min_year = int(df['publishedDate'].dt.year.min())
     max_year = int(df['publishedDate'].dt.year.max())
     year_range = st.slider("Publication year:", min_year, max_year, (min_year, max_year))
 
-    min_rating, max_rating = st.slider("Average score:", 1.0, 5.0, (1.0, 5.0), 0.1)
+    rating_range = st.slider("Average score:", 1.0, 5.0, (1.0, 5.0), 0.1)
 
     categories = ["Any"] + sorted(df['categories'].dropna().apply(normalize).unique())
     selected_category = st.selectbox("Category:", categories)
@@ -204,42 +195,35 @@ elif page == "Book Finder":
     max_r = int(df['ratingsCount'].max())
     ratings_range = st.slider("Number of reviews:", min_r, max_r, (min_r, max_r))
 
-    max_books = st.number_input(
-        "Max books to draw:",
-        min_value=1,
-        max_value=10,
-        value=5,
-        step=1
-    )
+    max_books = st.number_input("Max books to draw:", 1, 10, 5)
 
     if st.button("Find books"):
 
-        filtered = apply_filters(
-            df=df,
-            year_range=year_range,
-            min_year=min_year,
-            max_year=max_year,
-            min_rating=min_rating,
-            max_rating=max_rating,
-            ratings_range=ratings_range,
-            min_r=min_r,
-            max_r=max_r,
-            selected_category=selected_category
+        result = apply_filters(
+            year_range,
+            rating_range,
+            ratings_range,
+            min_year,
+            max_year,
+            min_r,
+            max_r,
+            selected_category
         )
 
-        if len(filtered) == 0:
+        if len(result) == 0:
             st.session_state.filtered_books = None
         else:
-            if len(filtered) > max_books:
-                filtered = filtered.sample(max_books, replace=False)
+            if len(result) > max_books:
+                result = result.sample(max_books)
 
-            st.session_state.filtered_books = filtered.reset_index(drop=True)
+            st.session_state.filtered_books = result
             st.session_state.page = 1
+
 
     if "filtered_books" in st.session_state:
 
         if st.session_state.filtered_books is None:
-            st.warning("There were no books matching your criteria. Please tweak your search or reload the page.")
+            st.warning("There were no books matching your criteria.")
 
         else:
             filtered = st.session_state.filtered_books
@@ -248,19 +232,17 @@ elif page == "Book Finder":
             col_prev, col_page, col_next = st.columns([1, 2, 1])
 
             with col_prev:
-                if st.session_state.page > 1:
-                    if st.button("Previous"):
-                        st.session_state.page -= 1
-                        st.rerun()
+                if st.session_state.page > 1 and st.button("Previous"):
+                    st.session_state.page -= 1
+                    st.rerun()
 
             with col_page:
                 st.markdown(f"### Book {st.session_state.page} / {total_pages}")
 
             with col_next:
-                if st.session_state.page < total_pages:
-                    if st.button("Next"):
-                        st.session_state.page += 1
-                        st.rerun()
+                if st.session_state.page < total_pages and st.button("Next"):
+                    st.session_state.page += 1
+                    st.rerun()
 
             book = filtered.iloc[st.session_state.page - 1]
 
@@ -275,12 +257,11 @@ elif page == "Book Finder":
             with col2:
                 st.markdown(f"### {normalize(book.get('Title'))}")
                 st.write(f"**Authors:** {normalize(book.get('authors'))}")
-                st.write(f"**Genre:** {normalize(book.get('categories'))}")
+                st.write(f"**Category:** {normalize(book.get('categories'))}")
                 st.write(f"**Synopsis:** {normalize(book.get('description'))}")
                 st.write(f"**Average score:** {round(book['review/score'],2) if pd.notna(book.get('review/score')) else 'No Data'}")
                 st.write(f"**Number of reviews:** {int(book['ratingsCount']) if pd.notna(book.get('ratingsCount')) else 'No Data'}")
                 st.write(f"**Date:** {book['publishedDate'].date() if pd.notna(book.get('publishedDate')) else 'No Data'}")
                 if pd.notna(book.get("previewLink")):
                     st.markdown(f"[Preview link]({book['previewLink']})")
-
 
