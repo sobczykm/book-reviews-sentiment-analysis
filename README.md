@@ -58,7 +58,6 @@ Aplikacja składa się z:
 | F-5 | Statystyki zbioru danych | Aplikacja wyświetla podstawowe statystyki dotyczące książek i ocen | 2 |
 | F-6 | Wyszukiwanie książek | Możliwość filtrowania książek po roku, kategorii, ocenie i liczbie recenzji | 3 |
 | F-7 | Losowa rekomendacja | System losowo wybiera książkę spełniającą kryteria wyszukiwania | 3 |
-| F-8 | Filtrowanie recenzji | Możliwość odrzucenia recenzji niskiej jakości (np. chaotycznych) | 3 |
 
 ---
 
