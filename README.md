@@ -47,7 +47,6 @@ Aplikacja składa się z:
 ## Specyfikacja wymagań
 
 ### Wymagania funkcjonalne
-#rozbic na bardziej dokladne, 1. statyski opisowe i wymienic, 2.ocena sentymentu recenzji wpisanej w formularzu, 3. wyszukiwarka książek wg okreslonych kryteriow
 
 | ID | Nazwa | Opis | Priorytet |
 |----|-------|------|-----------|
@@ -108,6 +107,7 @@ System składa się z trzech głównych warstw:
 
 - Python 3.8 lub nowszy
 - [uv](https://github.com/astral-sh/uv) - szybki menedżer pakietów Python
+- utworzenie folderu data
 - dane z [kaggle](https://www.kaggle.com/datasets/mohamedbakhet/amazon-books-reviews/data), dodane w folderze data
   - zmiana nazwy z Books_data.csv na books.csv
   - zmiana nazwy z Books_ratings.csv na ratings.csv
