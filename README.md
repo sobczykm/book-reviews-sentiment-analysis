@@ -48,17 +48,26 @@ Aplikacja składa się z:
 
 ### Wymagania funkcjonalne
 
-| ID | Nazwa | Opis | Priorytet |
-|----|-------|------|-----------|
-| F-1 | Analiza sentymentu recenzji | System umożliwia ocenę sentymentu wpisanej przez użytkownika recenzji książki | 1 |
-| F-2 | Skala ocen | System zwraca ocenę sentymentu w skali 1–5 | 1 |
-| F-3 | Interfejs tekstowy | Użytkownik może wprowadzić własny tekst recenzji | 1 |
-| F-4 | Wizualny wskaźnik wyniku | Wynik analizy prezentowany jest w formie graficznej (np. gwiazdki) | 2 |
-| F-5 | Statystyki zbioru danych | Aplikacja wyświetla podstawowe statystyki dotyczące książek i ocen | 2 |
-| F-6 | Wyszukiwanie książek | Możliwość filtrowania książek po roku, kategorii, ocenie i liczbie recenzji | 3 |
-| F-7 | Losowa rekomendacja | System losowo wybiera książkę spełniającą kryteria wyszukiwania | 3 |
-
----
+| ID   | Nazwa                   | Opis                                                                                                     | Priorytet |
+| ---- | ----------------------- | -------------------------------------------------------------------------------------------------------- | --------- |
+| F-1  | Liczba książek          | System wyświetla całkowitą liczbę książek dostępnych w zbiorze danych                                    | 1         |
+| F-2  | Średnia ocena           | System oblicza i prezentuje średnią ocenę wszystkich książek                                             | 1         |
+| F-3  | Średnia liczba recenzji | System wyświetla średnią liczbę recenzji przypadającą na jedną książkę                                   | 2         |
+| F-4  | Rozkład ocen            | System prezentuje wykres rozkładu liczby książek dla ocen 1–5                                            | 2         |
+| F-5  | Rozkład liczby recenzji | System prezentuje wykres liczby książek w przedziałach liczby recenzji                                   | 2         |
+| F-6  | Wprowadzanie recenzji   | Użytkownik może wpisać własny tekst recenzji książki                                                     | 1         |
+| F-7  | Analiza sentymentu      | System analizuje sentyment wpisanej recenzji przy użyciu modelu ML                                       | 1         |
+| F-8  | Predykcja oceny         | System zwraca przewidywaną ocenę recenzji w skali 1–5                                                    | 1         |
+| F-9  | Wizualizacja oceny      | Wynik predykcji prezentowany jest w formie graficznej (gwiazdki)                                         | 2         |
+| F-10 | Prawdopodobieństwa klas | System wyświetla prawdopodobieństwa dla każdej możliwej oceny (1–5)                                      | 3         |
+| F-11 | Uruchamianie analizy    | Analiza sentymentu uruchamiana jest po kliknięciu przycisku                                              | 1         |
+| F-12 | Filtr zakresu lat       | Użytkownik może określić zakres lat wydania książek za pomocą suwaka                                     | 1         |
+| F-13 | Filtr oceny             | Użytkownik może ustawić zakres średniej oceny książek                                                    | 1         |
+| F-14 | Filtr liczby recenzji   | Użytkownik może ustawić zakres liczby recenzji książek                                                   | 1         |
+| F-15 | Filtr kategorii         | Użytkownik może wybrać kategorię książki lub opcję „Dowolne"                                             | 2         |
+| F-16 | Liczba dopasowań        | System wyświetla liczbę książek spełniających wybrane kryteria                                           | 2         |
+| F-17 | Losowa rekomendacja     | System losowo wybiera jedną książkę spośród pasujących wyników                                           | 1         |
+| F-18 | Prezentacja książki     | System wyświetla szczegóły książki: tytuł, autorów, kategorię, opis, ocenę, liczbę recenzji, datę i link | 1         |
 
 ### Wymagania niefunkcjonalne
 
