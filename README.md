@@ -213,13 +213,25 @@ Aplikacja składa się z trzech głównych widoków:
 
 ## Scenariusze testów
 
-| ID | Wymaganie | Kroki | Oczekiwany rezultat | Status |
-|----|----------|-------|---------------------|--|
-| T-1 | F-1, F3 | Wpisać recenzję i kliknąć analizę | System zwraca ocenę sentymentu | ZROBIONE | 
-| T-2 | F-2 | Wpisać różne teksty | Wynik mieści się w skali 1–5 | ZROBIONE | 
-| T-3 | F-4 | Uruchomić analizę | Wyświetlane są gwiazdki | ZROBIONE | 
-| T-4 | F-5 | Otworzyć ekran Home | Wyświetlane są statystyki | ZROBIONE | 
-| T-5 | F-6 | Ustawić filtry i wyszukać książkę | Zwrócona książka spełnia kryteria | ZROBIONE | 
+| ID   | Wymaganie | Kroki                                       | Oczekiwany rezultat                                     | Status   |
+| ---- | --------- | ------------------------------------------- | ------------------------------------------------------- | -------- |
+| T-1  | F-1       | Otworzyć widok Home                         | Wyświetlana jest liczba książek w zbiorze danych        | ZROBIONE |
+| T-2  | F-2       | Otworzyć widok Home                         | Wyświetlana jest średnia ocena wszystkich książek       | ZROBIONE |
+| T-3  | F-3       | Otworzyć widok Home                         | Wyświetlana jest średnia liczba recenzji                | ZROBIONE |
+| T-4  | F-4       | Otworzyć widok Home                         | Wyświetlany jest wykres rozkładu ocen 1–5               | ZROBIONE |
+| T-5  | F-5       | Otworzyć widok Home                         | Wyświetlany jest wykres rozkładu liczby recenzji        | ZROBIONE |
+| T-6  | F-6       | Przejść do widoku Score Match               | Możliwe jest wpisanie tekstu recenzji                   | ZROBIONE |
+| T-7  | F-7, F-11 | Wpisać recenzję i kliknąć przycisk analizy  | System analizuje sentyment tekstu                       | ZROBIONE |
+| T-8  | F-8       | Wpisać recenzję i uruchomić analizę         | System zwraca ocenę w skali 1–5                         | ZROBIONE |
+| T-9  | F-9       | Uruchomić analizę recenzji                  | Wynik prezentowany jest w formie gwiazdek               | ZROBIONE |
+| T-10 | F-10      | Uruchomić analizę i rozwinąć szczegóły      | Wyświetlane są prawdopodobieństwa ocen 1–5              | ZROBIONE |
+| T-11 | F-12      | Przejść do Book Finder i ustawić zakres lat | Wyniki ograniczone są do wybranego zakresu              | ZROBIONE |
+| T-12 | F-13      | Ustawić zakres ocen książek                 | Zwrócone książki spełniają kryterium ocen               | ZROBIONE |
+| T-13 | F-14      | Ustawić zakres liczby recenzji              | Zwrócone książki spełniają kryterium liczby recenzji    | ZROBIONE |
+| T-14 | F-15      | Wybrać kategorię książki                    | Wyświetlane są tylko książki z danej kategorii          | ZROBIONE |
+| T-15 | F-16      | Ustawić filtry w Book Finder                | Wyświetlana jest liczba dopasowanych książek            | ZROBIONE |
+| T-16 | F-17      | Kliknąć „Find me a book”                    | System losowo wybiera jedną książkę                     | ZROBIONE |
+| T-17 | F-18      | Wyświetlić wynik wyszukiwania               | Pokazane są szczegóły książki (tytuł, autor, opis itd.) | ZROBIONE |
 
 ---
 
